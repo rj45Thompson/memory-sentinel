@@ -1,0 +1,13 @@
+# build outputs: Unreal writes these beside the project and the plugin
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.vs/
+__pycache__/
+*.pyc
+# the test game's Plugins folder is filled by running the installer on it (see README)
+unreal/SentinelTest/Plugins/
+# the installer's backups and .uproject copies, if you run it on the test game
+*.backup-*/
+*.uproject.bak

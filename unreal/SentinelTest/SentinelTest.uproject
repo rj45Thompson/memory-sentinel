@@ -1,0 +1,8 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.7",
+	"Category": "",
+	"Description": "Memory Sentinel's test game: every bug the tool must find is planted here on purpose, beside a clean copy of each pattern that must produce nothing.",
+	"Modules": [ { "Name": "SentinelTest", "Type": "Runtime", "LoadingPhase": "Default" } ],
+	"Plugins": [ { "Name": "MemorySentinel", "Enabled": true } ]
+}

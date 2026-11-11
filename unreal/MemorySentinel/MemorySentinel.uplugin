@@ -1,0 +1,18 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Memory Sentinel",
+	"Description": "Finds Unreal memory bugs before players do: UObject pointers the garbage collector cannot see, shared pointer cycles, objects that outlive their level (with the chain that holds each one), and heap stomps caught by canaries, quarantine, rotating CPU data breakpoints and sampled guard pages.",
+	"Category": "Programming",
+	"CreatedBy": "Memory Sentinel authors",
+	"DocsURL": "https://rj45thompson.github.io/anchor-demo/memsentinel/",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"Modules": [
+		{ "Name": "MemorySentinelHeap", "Type": "Runtime", "LoadingPhase": "PostConfigInit", "PlatformAllowList": [ "Win64" ] },
+		{ "Name": "MemorySentinel", "Type": "Runtime", "LoadingPhase": "Default", "PlatformAllowList": [ "Win64" ] },
+		{ "Name": "MemorySentinelEditor", "Type": "Editor", "LoadingPhase": "PostEngineInit", "PlatformAllowList": [ "Win64" ] }
+	]
+}
