@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The runtime module: console commands, the heap findings writer, and the in-game overlay (UC-2.1, UC-3.7, UC-4.1).
 //   ms.LeakTest <map> [-seconds=5] [-return=/Engine/Maps/Entry] [-quit]   the level leak test
 //   ms.Heap                      the heap sampler's counters and what it watches now

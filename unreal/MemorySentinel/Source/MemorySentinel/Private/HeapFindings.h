@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The heap findings writer (UC-3.4, 3.5, 3.7). Every frame it gives the sampler a check budget, asks the rotor for a new set
 // of watch words every few frames, drains the sampler's events, pairs a watched write with the canary or quarantine failure
 // of the same block, turns program counters into function, file and line, and writes a findings file when something new

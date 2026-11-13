@@ -34,7 +34,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "unreal" / "MemorySentinel" / "Tools"))
+sys.path.insert(0, str(ROOT / "unreal" / "MemorySentinel" / "Content" / "Python"))
 
 from memsentinel.report import VIEWER, Report  # noqa: E402
 from memsentinel.unreal import EngineNotFound, find_engine  # noqa: E402

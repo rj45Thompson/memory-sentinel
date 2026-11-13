@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The panel's colours and fonts, in one place. Dark, so it reads the same over a game viewport and docked in the editor;
 // each problem keeps one colour everywhere (the chips, the list's edge, the diagrams, and the visual report).
 #pragma once

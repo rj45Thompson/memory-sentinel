@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 using UnrealBuildTool;
 
 // The editor tab and the Tools menu entry. The panel itself lives in the runtime module, so the same widget is the

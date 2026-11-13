@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 #include "SentinelFindings.h"
 
 #include "HAL/FileManager.h"

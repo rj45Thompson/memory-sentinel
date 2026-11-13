@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The findings schema in C++ (UC-2, UC-3.7, R10, R11). The same shape the Python side writes (memsentinel/findings.py):
 // a findings file says what one detector checked, what it cannot see, and what it found, and every finding says how it is
 // known. The panel and the visual report read both sides' files the same way.

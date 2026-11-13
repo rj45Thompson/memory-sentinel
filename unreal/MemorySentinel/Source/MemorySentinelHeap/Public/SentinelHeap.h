@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The heap sampler's public face (UC-3). The sampler is a proxy over the engine's allocator: one allocation in N, and every
 // allocation of a suspect size, gets a canary after its end and a recorded allocation stack. Freed sampled blocks are held in
 // quarantine, filled with a pattern, instead of being reused. The CPU's four data breakpoints rotate over the likeliest

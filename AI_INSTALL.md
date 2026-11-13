@@ -48,8 +48,8 @@ fails, stop and tell me what failed and why.
 
 5. Run the static scan with the engine's own Python, build the HTML report, and open it:
 
-       & "$engine\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" Plugins\MemorySentinel\Tools\ms.py scan .
-       & "$engine\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" Plugins\MemorySentinel\Tools\ms.py report Saved\MemorySentinel -o Saved\MemorySentinel\report.html
+       & "$engine\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" Plugins\MemorySentinel\Content\Python\ms.py scan .
+       & "$engine\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" Plugins\MemorySentinel\Content\Python\ms.py report Saved\MemorySentinel -o Saved\MemorySentinel\report.html
        Start-Process Saved\MemorySentinel\report.html
 
    The scan's exit code is 0 when it found no errors, 1 when it found some (that is a result, not a failure), and 2 when

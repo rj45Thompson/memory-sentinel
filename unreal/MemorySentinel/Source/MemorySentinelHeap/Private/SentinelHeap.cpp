@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The heap sampler (UC-3, R5-R9). Classes, each named for the step it serves:
 //   FSentinelHeap   the allocator proxy: picks samples, writes canaries, quarantines frees, answers sizes (UC-3.1-3.3)
 //   FBlockTable     sampled blocks by address, read without a lock on every free (UC-3.2)

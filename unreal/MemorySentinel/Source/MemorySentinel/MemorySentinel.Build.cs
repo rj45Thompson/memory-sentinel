@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 using UnrealBuildTool;
 
 // The level leak test, the heap findings writer, the panel and the in-game overlay (UC-2, UC-3.7, UC-4).

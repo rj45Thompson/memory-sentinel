@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The level leak test (UC-2, R4). It records every live object, opens a map, lets it run, opens the return map, collects
 // garbage twice, and lists what is still alive that should not be: whatever belonged to the map it left, actors and
 // components outside any live world, and objects of the project's own classes made during the level. For each survivor

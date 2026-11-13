@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 #include "SSentinelPanel.h"
 
 #include "LevelLeakTest.h"
@@ -15,6 +16,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "UObject/Package.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Layout/SBorder.h"
@@ -509,7 +511,7 @@ bool SSentinelPanel::RunTool(const TArray<FString>& Args, const FString& What, T
 {
 	const FString Python = FPaths::ConvertRelativePathToFull(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/Python3/Win64/python.exe"));
 	const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("MemorySentinel"));
-	const FString Tool = Plugin ? FPaths::ConvertRelativePathToFull(Plugin->GetBaseDir() / TEXT("Tools/ms.py")) : FString();
+	const FString Tool = Plugin ? FPaths::ConvertRelativePathToFull(Plugin->GetBaseDir() / TEXT("Content/Python/ms.py")) : FString();
 	if (!FPaths::FileExists(Python)) { LastMessage = FString::Printf(TEXT("%s could not run: the engine's Python is not at %s"), *What, *Python); return false; }
 	if (!FPaths::FileExists(Tool)) { LastMessage = FString::Printf(TEXT("%s could not run: %s is missing"), *What, *Tool); return false; }
 	FString Params = FString::Printf(TEXT("\"%s\""), *Tool);

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The panel (UC-4.1, 4.2): every findings file under Saved/MemorySentinel, newest first, filterable by problem; the
 // selected finding's why, fix and how it is known; and a diagram of its evidence. The editor docks it as a tab; a running
 // game shows it as an overlay with `ms.Show`. Its buttons run the static pass, a leak test and the visual report.

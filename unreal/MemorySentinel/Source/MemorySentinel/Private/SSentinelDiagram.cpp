@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 #include "SSentinelDiagram.h"
 
 #include "SSentinelPanel.h"

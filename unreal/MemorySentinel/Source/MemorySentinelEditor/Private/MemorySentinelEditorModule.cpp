@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // The editor side (UC-4.1, UC-1.7): Tools > Memory Sentinel opens the panel as a tab, and a double-clicked source finding
 // opens the IDE at its line.
 #include "Modules/ModuleManager.h"

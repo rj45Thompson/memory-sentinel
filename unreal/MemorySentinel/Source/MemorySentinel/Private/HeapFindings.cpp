@@ -1,8 +1,10 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 #include "HeapFindings.h"
 
 #include "SentinelFindings.h"
 #include "HAL/IConsoleManager.h"
 #include "HAL/PlatformStackWalk.h"
+#include "HAL/PlatformTime.h"
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/CoreDelegates.h"
@@ -26,6 +28,7 @@ namespace
 		TEXT("A canary catches a write past the end that changes it; a write that skips past the canary, or writes the same bytes, is not caught."),
 		TEXT("The quarantine catches writes into freed blocks while they are held (up to 32 MB, 4096 blocks); reads after free are not caught, except on guarded blocks."),
 		TEXT("Data breakpoints watch at most four 8-byte words at a time, on threads that existed at the last rotation."),
+		TEXT("A block can be watched only from the first rotation after it is allocated (every ms.Heap.RotateFrames frames); a write past its end before that is caught by its canary at the next check, not at the instruction."),
 		TEXT("A block allocated before the plugin loaded, or larger than 1 MB, is never sampled."),
 		TEXT("Guard pages: an overrun shorter than the gap between the block's end and the page (under the block's alignment) is caught by its canary on free, not at the instruction; an underrun is reported against the block before it."),
 	};

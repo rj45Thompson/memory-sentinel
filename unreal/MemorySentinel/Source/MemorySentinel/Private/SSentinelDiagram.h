@@ -1,3 +1,4 @@
+// Copyright (c) 2026 RJ Thompson. Released under the MIT License; see LICENSE.
 // A finding's evidence as a picture (UC-4.2), painted directly:
 //   level-survivor   the reference chain, root first, each link labelled with what holds the next one
 //   shared-cycle     the ring of types, each arrow a member; the side to weaken in orange

@@ -53,10 +53,10 @@ From a script or CI (any Python 3.9 or newer; the engine's own is
 `Engine/Binaries/ThirdParty/Python3/Win64/python.exe`):
 
 ```
-python Plugins/MemorySentinel/Tools/ms.py scan <project folder>
-python Plugins/MemorySentinel/Tools/ms.py leaktest --project <P.uproject> --map /Game/Maps/YourMap
-python Plugins/MemorySentinel/Tools/ms.py heap --project <P.uproject> --map /Game/Maps/YourMap --seconds 60
-python Plugins/MemorySentinel/Tools/ms.py report <project>/Saved/MemorySentinel -o report.html
+python Plugins/MemorySentinel/Content/Python/ms.py scan <project folder>
+python Plugins/MemorySentinel/Content/Python/ms.py leaktest --project <P.uproject> --map /Game/Maps/YourMap
+python Plugins/MemorySentinel/Content/Python/ms.py heap --project <P.uproject> --map /Game/Maps/YourMap --seconds 60
+python Plugins/MemorySentinel/Content/Python/ms.py report <project>/Saved/MemorySentinel -o report.html
 ```
 
 Exit codes: 0 nothing at or above `--fail-on`, 1 findings, 2 the detector could not run (never a clean pass).
@@ -64,7 +64,7 @@ Exit codes: 0 nothing at or above `--fail-on`, 1 findings, 2 the detector could 
 ## What is in this repository
 
 - `unreal/MemorySentinel`: the plugin (three modules: `MemorySentinelHeap`, `MemorySentinel`, `MemorySentinelEditor`) and
-  its Python tools (`Tools/ms.py`, `Tools/memsentinel/`).
+  its Python tools (`Content/Python/ms.py`, `Content/Python/memsentinel/`).
 - `unreal/SentinelTest`: the test game. Every bug the tool must find is planted there on purpose, beside a clean copy of each
   pattern that must produce nothing. To build it, first run the installer on it:
   `.\Install-MemorySentinel.cmd -Project unreal\SentinelTest\SentinelTest.uproject -Yes` (from the repository folder).

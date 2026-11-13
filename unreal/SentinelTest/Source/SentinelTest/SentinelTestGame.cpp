@@ -1,9 +1,12 @@
 #include "SentinelTestGame.h"
 
+#include "CoreGlobals.h"
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformMisc.h"
+#include "HAL/PlatformTime.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Modules/ModuleManager.h"
@@ -18,6 +21,15 @@ void SentinelPlant_HeapOverrun(uint8* Block, int32 Size);
 void SentinelPlant_WriteAfterFree(uint8* Block);
 void SentinelPlant_DoubleFree(uint8* Block);
 void SentinelPlant_GuardOverrun(uint8* Block, int32 Size);
+
+/** Frames between two reloads of the four data breakpoints: Memory Sentinel's ms.Heap.RotateFrames. The heap scenarios
+    cannot run without the plugin, so a missing variable stops the game instead of guessing a number. */
+static int32 RotationFrames()
+{
+	const IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(TEXT("ms.Heap.RotateFrames"));
+	checkf(V, TEXT("SentinelTest: ms.Heap.RotateFrames is not registered; the heap scenarios need the Memory Sentinel plugin"));
+	return FMath::Max(1, V->GetInt());
+}
 
 void ASentinelLeakyActor::BeginPlay()
 {
@@ -72,11 +84,17 @@ void ASentinelTestGameMode::Tick(float DeltaSeconds)
 		Block = static_cast<uint8*>(FMemory::Malloc(Size));
 		FMemory::Memzero(Block, Size);
 		if (Scenario == TEXT("uaf")) { FMemory::Free(Block); }
+		AllocatedAt = FPlatformTime::Seconds();
+		AllocatedFrame = GFrameCounter;
 		UE_LOG(LogSentinelTest, Display, TEXT("SentinelTest: allocated a %d-byte block at %p%s"), Size, Block, Scenario == TEXT("uaf") ? TEXT(" and freed it") : TEXT(""));
 		Step = 1;
 	}
-	else if (Step == 1 && T > 2.5)
+	else if (Step == 1 && FPlatformTime::Seconds() - AllocatedAt > 1.5 && GFrameCounter - AllocatedFrame >= uint64(4 * RotationFrames()))
 	{
+		// The write waits until the block has lived 1.5 s AND four data breakpoint rotations, timed from the allocation. It
+		// used to be timed from BeginPlay (allocate after 1.0 s, write after 2.5 s): on a slow start (11-13, engine init 23 s
+		// instead of 12 s) the first tick came 3.0 s after BeginPlay, both times had passed, and the write landed one frame
+		// after the allocation, before any rotation could watch the block, so only the canary saw it.
 		UE_LOG(LogSentinelTest, Display, TEXT("SentinelTest: planting '%s' now"), *Scenario);
 		if (Scenario == TEXT("stomp")) { SentinelPlant_HeapOverrun(Block, Size); }
 		else if (Scenario == TEXT("stompfree")) { SentinelPlant_HeapOverrun(Block, Size); FMemory::Free(Block); }

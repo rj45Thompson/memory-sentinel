@@ -36,7 +36,7 @@ lines as `N:line`; steps cite requirements; code cites steps.
 
 Primary actor: an Unreal C++ developer. Precondition: the plugin is in the project's `Plugins/` folder.
 
-1. Tools > Memory Sentinel > **Scan source** (or `python Plugins/MemorySentinel/Tools/ms.py scan <project>`) -> every `.h` and
+1. Tools > Memory Sentinel > **Scan source** (or `python Plugins/MemorySentinel/Content/Python/ms.py scan <project>`) -> every `.h` and
    `.cpp` under `Source/` and each project plugin's `Source/` is read, and the panel says how many files, types and members it read.
 2. A UCLASS or USTRUCT member that holds a raw `UObject*`, a `TObjectPtr` or a container of them with no `UPROPERTY` -> one
    **error** finding at that line (R1).
@@ -132,7 +132,7 @@ Primary actor: an Unreal C++ developer trying the plugin. Precondition: the inst
 
 ## Classes (the bones) and the steps they serve
 
-Python, `unreal/MemorySentinel/Tools/memsentinel/`:
+Python, `unreal/MemorySentinel/Content/Python/memsentinel/`:
 - `cpp.SourceText`: comments and strings blanked, lines kept (UC-1.1).
 - `scanner.TypeIndex`: every class/struct with its kind, bases and body (UC-1.1, 1.2, 2c).
 - `scanner.MemberReader`, `scanner.PointerType`: a member declaration and what it holds (UC-1.2, 1.3).

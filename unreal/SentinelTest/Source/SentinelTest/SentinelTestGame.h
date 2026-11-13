@@ -59,4 +59,6 @@ private:
 	double Started = 0.0;
 	int32 Step = 0;
 	uint8* Block = nullptr;
+	double AllocatedAt = 0.0;      // when the scenario's block was allocated, FPlatformTime::Seconds()
+	uint64 AllocatedFrame = 0;     // and on which frame, GFrameCounter
 };

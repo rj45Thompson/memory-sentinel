@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "unreal" / "MemorySentinel" / "Tools"))
+sys.path.insert(0, str(ROOT / "unreal" / "MemorySentinel" / "Content" / "Python"))
 
 from memsentinel import findings as F  # noqa: E402
 from memsentinel.report import Report  # noqa: E402
