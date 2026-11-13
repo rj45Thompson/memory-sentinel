@@ -11,6 +11,7 @@ Copies the plugin into <project>\Plugins\MemorySentinel and adds it to the proje
 - Before the .uproject is changed it is saved as <name>.uproject.bak. Only the plugin entry is added (or switched on);
   every other byte of the file stays as it was, and the result is read back and compared before the installer finishes.
 - If the project is not set to Unreal 5.7, it says so and asks before going on. -Yes answers every question with yes.
+- A read-only .uproject (in Perforce, one that is not checked out) stops the install before anything is copied.
 
 Exit codes: 0 installed, 1 stopped (you said no, picked nothing, or something needs you first), 2 could not install
 (the reason is printed). When it stops or fails, it says what, if anything, it had already changed.
@@ -51,6 +52,15 @@ function Stop-Install([int]$Code, [string]$Why) {
         foreach ($d in $Done) { Write-Host "  - $d" }
     }
     exit $Code
+}
+
+# Anything that goes wrong without a check of its own (a write Windows refuses, a file another program holds) ends the
+# install here, through Stop-Install, so it always says what it had already changed. $Step says what it was doing.
+$Step = 'starting'
+trap {
+    $e = $_.Exception
+    while ($e.InnerException) { $e = $e.InnerException }
+    Stop-Install 2 "Could not finish $Step`: $($e.Message)"
 }
 
 function Ask([string]$Question) {
@@ -297,15 +307,18 @@ function Test-ProjectEdit($Before, [string]$AfterText) {
 Say "Memory Sentinel $PluginVersion installer (built and tested on Unreal $TestedEngine, Windows x64)"
 Say ''
 
+$Step = 'finding the project file'
 $uproject = Resolve-ProjectFile $Project
 $projectDir = Split-Path -Parent $uproject
 $projectName = [System.IO.Path]::GetFileNameWithoutExtension($uproject)
 Say "Project: $uproject"
 
+$Step = "reading $uproject"
 $original = Read-ProjectText $uproject
 try { $json = $original.Text | ConvertFrom-Json } catch { Stop-Install 2 "$uproject is not valid JSON: $($_.Exception.Message)" }
 
 # 1. The engine version.
+$Step = 'checking the engine version'
 $association = [string](Get-Prop $json 'EngineAssociation')
 $engine = Get-EngineInfo $association
 if ($engine.Version -eq $TestedEngine) {
@@ -322,6 +335,7 @@ if ($engine.Version -eq $TestedEngine) {
 }
 
 # 2. A C++ project?
+$Step = 'looking for the Source folder'
 $sourceDir = Join-Path $projectDir 'Source'
 if (-not (Test-Path -LiteralPath $sourceDir)) {
     Say ''
@@ -331,6 +345,7 @@ if (-not (Test-Path -LiteralPath $sourceDir)) {
 }
 
 # 3. Not while Unreal has this project open: it holds the old plugin's files and would not load the new one.
+$Step = 'checking whether Unreal has this project open'
 $projectForms = @($uproject, $uproject.Replace('\', '/'))
 try {
     $editors = @(Get-CimInstance -ClassName Win32_Process -Filter "Name LIKE 'UnrealEditor%'" | Where-Object {
@@ -347,6 +362,7 @@ if ($editors.Count -gt 0) {
 }
 
 # 4. The plugin that came with this installer: Plugins\MemorySentinel in the download, unreal\MemorySentinel in the repository.
+$Step = 'finding the plugin next to the installer'
 $here = $PSScriptRoot
 $sources = @(@((Join-Path $here "Plugins\$PluginName"), (Join-Path $here "unreal\$PluginName")) |
              Where-Object { Test-Path -LiteralPath (Join-Path $_ "$PluginName.uplugin") })
@@ -364,6 +380,7 @@ if ($source.TrimEnd('\') -ieq $dest.TrimEnd('\')) {
 }
 
 # 5. Another copy somewhere else under Plugins would make Unreal find the plugin twice.
+$Step = "looking for another copy of the plugin under $pluginsDir"
 if (Test-Path -LiteralPath $pluginsDir) {
     $others = @(Get-ChildItem -LiteralPath $pluginsDir -Filter "$PluginName.uplugin" -Recurse -Depth 4 -File |
                 Where-Object { $_.DirectoryName.TrimEnd('\') -ine $dest.TrimEnd('\') })
@@ -373,7 +390,15 @@ if (Test-Path -LiteralPath $pluginsDir) {
     }
 }
 
-# 6. An existing Plugins\MemorySentinel goes to a dated backup outside Plugins.
+# 6. Work out the change to the .uproject now, while nothing has been touched, so a project file that cannot take it
+#    stops the install here instead of after the copy. A read-only one is what Perforce leaves when it is not checked out.
+$Step = "working out the change to $projectName.uproject"
+$edit = Edit-ProjectText $original.Text $json
+if ($null -ne $edit -and (Get-Item -LiteralPath $uproject -Force).IsReadOnly) {
+    Stop-Install 1 "The project file $uproject is read-only (in Perforce: not checked out). Check it out, then run the installer again."
+}
+
+# 7. An existing Plugins\MemorySentinel goes to a dated backup outside Plugins.
 $backup = $null
 if (Test-Path -LiteralPath $dest) {
     $existing = Get-Item -LiteralPath $dest -Force
@@ -381,11 +406,13 @@ if (Test-Path -LiteralPath $dest) {
         Stop-Install 1 "$dest is a link to another folder, not a copy. The installer does not move or write through links: remove the link yourself if you want a copied plugin there."
     }
     $backup = Join-Path $projectDir ("$PluginName.backup-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+    $Step = "moving $dest to $backup"
     Move-Item -LiteralPath $dest -Destination $backup
     $Done.Add("Moved the Memory Sentinel that was in Plugins to $backup")
 }
 
-# 7. Copy the plugin.
+# 8. Copy the plugin.
+$Step = "copying the plugin to $dest (what was copied before the error is still there)"
 $files = @(Get-ChildItem -LiteralPath $source -Recurse -File -Force | Where-Object {
     $rel = $_.FullName.Substring($source.Length).TrimStart('\')
     $parts = $rel.Split('\')
@@ -401,18 +428,21 @@ $copied = @(Get-ChildItem -LiteralPath $dest -Recurse -File -Force).Count
 if ($copied -ne $files.Count) { Stop-Install 2 "Copied $copied files to $dest but the plugin has $($files.Count)." }
 $Done.Add("Copied the plugin to $dest ($copied files, source only: Unreal builds it for your project)")
 
-# 8. List the plugin in the .uproject.
-$edit = Edit-ProjectText $original.Text $json
+# 9. List the plugin in the .uproject (the change was worked out in step 6).
 if ($null -eq $edit) {
     $Done.Add("Left $projectName.uproject as it was: it already lists MemorySentinel, switched on")
 } else {
     $bak = "$uproject.bak"
     if (Test-Path -LiteralPath $bak) { $bak = "$uproject." + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.bak' }
+    $Step = "saving the old project file as $bak"
     [System.IO.File]::WriteAllBytes($bak, $original.Bytes)
     $Done.Add("Saved the old project file as $bak")
+    $Step = "writing $uproject (the old one is in $bak)"
     [System.IO.File]::WriteAllText($uproject, $edit.Text, (New-Object System.Text.UTF8Encoding($original.Bom)))
+    $Step = "reading $uproject back to compare it"
     $problem = Test-ProjectEdit $json (Read-ProjectText $uproject).Text
     if ($problem) {
+        $Step = "putting $uproject back as it was (the old one is in $bak)"
         [System.IO.File]::WriteAllBytes($uproject, $original.Bytes)
         $Done.Add("Put $projectName.uproject back as it was, because $problem")
         Stop-Install 2 "Could not add the plugin to $projectName.uproject safely: $problem. Add {`"Name`": `"$PluginName`", `"Enabled`": true} to its Plugins list by hand."
@@ -420,7 +450,8 @@ if ($null -eq $edit) {
     $Done.Add("In $projectName.uproject: $($edit.Did); the rest of the file is unchanged (read back and compared)")
 }
 
-# 9. Tell the user what happened and what comes next.
+# 10. Tell the user what happened and what comes next.
+$Step = 'printing what was done (the install itself is finished)'
 Say ''
 Say "Memory Sentinel $PluginVersion is installed in $projectDir."
 Say 'What the installer did:'

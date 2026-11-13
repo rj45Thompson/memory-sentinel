@@ -11,7 +11,9 @@ Into <site>/memsentinel/:
 - MemorySentinel-UE5.7-v<V>.zip: the plugin, as Plugins/MemorySentinel (source, no build outputs),
 - MemorySentinel-Install-UE5.7-v<V>.zip: the same plugin plus the one-click installer and the AI assistant prompt,
 - memsentinel-source-v<V>.zip: everything public, the same files as the public repository.
-The page itself (<site>/memsentinel/index.html) is written by hand and is not touched here.
+The two plugin zips carry the README as ZipReadme makes it (it names the zip's own Plugins/MemorySentinel).
+The page itself (<site>/memsentinel/index.html) is written by hand and is not changed here, but it is read through the
+privacy gate with everything else, so a page that names a private word or a machine folder stops the publish.
 
 Into <repo>: the public repository's working tree, exactly PublicSet plus its .gitignore and .gitattributes. A new folder
 is made a git repository; nothing is committed or pushed here.
@@ -93,8 +95,34 @@ class PublicSet:
         """The plugin as it is unzipped into a project: Plugins/MemorySentinel/..., with the licence and readme beside it."""
         entries = {"Plugins/" + f[len("unreal/"):]: (ROOT / f).read_bytes() for f in self.tree(self.PLUGIN)}
         for extra in ("LICENSE", "README.md"):
-            entries[f"Plugins/MemorySentinel/{extra}"] = (ROOT / extra).read_bytes()
+            entries[f"Plugins/MemorySentinel/{extra}"] = self.zip_file(extra)
         return entries
+
+    @staticmethod
+    def zip_file(rel: str) -> bytes:
+        """A top-level public file as it goes into the plugin and install zips: README.md as ZipReadme makes it, the rest as is."""
+        data = (ROOT / rel).read_bytes()
+        return ZipReadme.from_repo(data) if rel == "README.md" else data
+
+
+class ZipReadme:
+    """The README inside the plugin and install zips. The repository's README is written for the repository, where the
+    plugin is unreal/MemorySentinel; both zips hold it at Plugins/MemorySentinel, so the "Install by hand" step must name
+    that folder instead (the source zip is the repository's layout and keeps the repository's README).
+
+    Only that one step changes, and it must be found exactly once: a README whose step was reworded stops the publish
+    rather than shipping a zip whose README points at a folder the zip does not hold."""
+
+    REPO_STEP = b"Copy `unreal/MemorySentinel` into your project's `Plugins/` folder"
+    ZIP_STEP = b"Copy this zip's `Plugins/MemorySentinel` folder into your project's `Plugins/` folder"
+
+    @classmethod
+    def from_repo(cls, data: bytes) -> bytes:
+        n = data.count(cls.REPO_STEP)
+        if n != 1:
+            raise Refused(f"README.md has the by-hand step {cls.REPO_STEP.decode()!r} {n} times, not once, so the zips' "
+                          "README cannot name the zip's own Plugins/MemorySentinel; update ZipReadme to the new wording")
+        return data.replace(cls.REPO_STEP, cls.ZIP_STEP)
 
 
 class PrivacyGate:
@@ -237,9 +265,13 @@ def publish(site: Path, repo_dir: Path) -> str:
     plugin = public.plugin_entries()
     install = dict(plugin)
     for extra in PublicSet.INSTALLER:
-        install[extra] = (ROOT / extra).read_bytes()
+        install[extra] = public.zip_file(extra)
     source = {f"memsentinel/{rel}": data for rel, data in repo_items.items() if not rel.startswith(".git")}
-    for name, items in (("the public repository", repo_items), (PLUGIN_ZIP, plugin), (INSTALL_ZIP, install), (SOURCE_ZIP, source)):
+    page = out / "index.html"
+    if not page.is_file():
+        raise Refused(f"the page {page} is missing")
+    for name, items in (("the public repository", repo_items), (PLUGIN_ZIP, plugin), (INSTALL_ZIP, install), (SOURCE_ZIP, source),
+                        ("the page", {"memsentinel/index.html": page.read_bytes()})):
         gate.check(items, name)
 
     sample = sorted((ROOT / "site" / "sample").glob("*.json"))
@@ -290,7 +322,8 @@ def publish(site: Path, repo_dir: Path) -> str:
     lines += [f"  {name}: {n} files, {size:,} bytes" for name, (size, n) in sizes.items()]
     lines.append(f"public repository {repo.folder}: {len(repo_items)} files ({counts['added']} added, {counts['changed']} changed, "
                  f"{counts['removed']} removed, {counts['same']} unchanged); not committed")
-    lines.append(f"privacy gate: {len(gate.patterns)} words and paths, 0 hits in the repository tree, the three zips and sample.js")
+    lines.append(f"privacy gate: {len(gate.patterns)} words and paths, 0 hits in the repository tree, the three zips, sample.js "
+                 "and the page")
     return "\n".join(lines)
 
 

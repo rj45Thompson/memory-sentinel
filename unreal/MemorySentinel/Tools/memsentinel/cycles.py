@@ -1,7 +1,8 @@
 """Shared pointer cycles between types (UC-1.6, R3).
 
-A TSharedPtr (or TSharedRef) is a reference count. When A holds a strong shared pointer to B and B holds one back to A,
-neither count can reach zero once both exist, so both are leaked. The fix is to make one side a TWeakPtr.
+A TSharedPtr (or TSharedRef) counts references in a control block beside the object; when the last strong reference
+goes, the object goes. When A holds a strong shared pointer to B and B holds one back to A, neither count can reach zero
+once both exist, so both are leaked. The fix is to make one side a TWeakPtr.
 
 `SharedGraph` draws one edge Owner -> Target for every member that holds a strong shared pointer to Target, directly or
 inside a container. A type inherits its bases' edges, and an edge to a base also reaches every type derived from it in
